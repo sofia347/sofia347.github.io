@@ -1,0 +1,1297 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i"
+		rel="stylesheet">
+	<title>KASS</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link rel="shortcut icon" type="image/icon" href="assets/images/Logo.png" />
+	<link rel="stylesheet" href="assets/css/font-awesome.min.css">
+	<link rel="stylesheet" href="assets/css/linearicons.css">
+	<link rel="stylesheet" href="assets/css/animate.css">
+	<link rel="stylesheet" href="assets/css/owl.carousel.min.css">
+	<link rel="stylesheet" href="assets/css/owl.theme.default.min.css">
+	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="assets/css/bootsnav.css">
+	<link rel="stylesheet" href="assets/css/style_AG.css">
+	<link rel="stylesheet" href="assets/css/responsive.css">
+
+	<!--<script src="server.js"></script>-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+	<script>
+		// Variables globales
+		let cart = [];
+
+		// Función para alternar la visibilidad del carrito
+		function toggleCart() {
+			document.querySelector('.cart-dropdown').classList.toggle('active');
+		}
+
+		// Actualizar ícono del carrito
+		function updateCartIcon() {
+			const badge = document.querySelector('.badge');
+			badge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+		}
+
+		// Renderizar el carrito
+		function renderCart() {
+			const cartList = document.querySelector('.cart-list');
+			const totalText = document.querySelector('.total');
+			cartList.innerHTML = ''; // Limpia la lista
+			let total = 0;
+
+			cart.forEach((item, index) => {
+				total += item.price * item.quantity;
+				cartList.innerHTML += `
+                    <li>
+                        <img src="${item.image}" alt="${item.name}">
+                        <div>
+                            <span>${item.name} (x${item.quantity})</span><br>
+                            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                        <button onclick="removeFromCart(${index})">&times;</button> <!-- Solo la "X" -->
+                    </li>
+                `;
+			});
+
+			totalText.textContent = `Total: $${total.toFixed(2)}`;
+		}
+
+		// Agregar producto al carrito
+		function addToCart(product) {
+			const existingProduct = cart.find(item => item.id === product.id);
+
+			if (existingProduct) {
+				existingProduct.quantity++;
+			} else {
+				cart.push({ ...product, quantity: 1 });
+			}
+
+			updateCartIcon();
+			renderCart();
+			saveCart();
+		}
+
+		// Eliminar producto del carrito
+		function removeFromCart(index) {
+			if (cart[index].quantity > 1) {
+				cart[index].quantity--; // Reduce la cantidad en 1
+			} else {
+				cart.splice(index, 1); // Elimina el producto si la cantidad es 0
+			}
+
+			updateCartIcon(); // Actualiza el ícono del carrito
+			renderCart(); // Renderiza el carrito actualizado
+			saveCart(); // Guarda los cambios en localStorage
+		}
+
+		// Vaciar carrito
+		function clearCart() {
+			cart = [];
+			updateCartIcon();
+			renderCart();
+			saveCart();
+		}
+
+		// Guardar carrito en localStorage
+		function saveCart() {
+			localStorage.setItem('cart', JSON.stringify(cart));
+		}
+
+		// Cargar carrito desde localStorage
+		function loadCart() {
+			const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+			cart = savedCart;
+			updateCartIcon();
+			renderCart();
+		}
+
+		// Inicializar
+		document.addEventListener('DOMContentLoaded', loadCart);
+
+		function openModal() {
+			document.getElementById("checkoutModal").style.display = "block";
+		}
+		
+		function closeModal() {
+			// Cierra el modal
+			document.getElementById("checkoutModal").style.display = "none";
+		}
+
+
+		function processPayment() {
+			const email = document.getElementById("email").value;
+			if (!email) {
+				alert("Por favor, ingresa tu correo.");
+				return;
+			}
+
+			// Redirigir a PayPal (Simulación de pago)
+			window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_cart&business=TU_EMAIL_PAYPAL&currency_code=USD&upload=1&amount_1=10.00&item_name_1=Carrito`, '_blank');
+
+
+			// Generar la factura después de pagar
+			generateInvoice();
+		}
+		function generateInvoice() {
+			const { jsPDF } = window.jspdf;
+			const doc = new jsPDF();
+
+			// Título
+			doc.setFontSize(18);
+			doc.text("Factura Electrónica", 20, 20);
+
+			// Información de la empresa
+			doc.setFontSize(12);
+			doc.text("KASS Inc.", 20, 30);
+			doc.text("Av. Adolfo López Mateos Ote. 1801, Bona Gens, 20256 Aguascalientes, Ags.", 20, 40);
+			doc.text("RFC: RWX12345678MXP", 20, 50);
+			doc.text("Tel: 555-1234-5678", 20, 60);
+			doc.text("Correo: Kass.accesories@gmail.com", 20, 70);
+
+			// Fecha y folio
+			const date = new Date().toLocaleString();
+			const folio = Math.floor(Math.random() * 90000) + 10000; // Generar un número aleatorio de 5 dígitos
+			doc.text(`Fecha: ${date}`, 20, 80);
+			doc.text(`Folio: ${folio}`, 20, 90);
+
+			// Información del cliente
+			const customerName = document.getElementById("name").value;
+			const email = document.getElementById("email").value;
+
+			doc.text(`Cliente: ${customerName}`, 20, 100);
+			doc.text(`Correo: ${email}`, 20, 110);
+
+			// Detalle de productos (Tabla)
+			let y = 120;
+			const productTableHeader = ["Descripción", "Cantidad", "Precio Unitario", "Total"];
+			doc.setFontSize(10);
+			productTableHeader.forEach((header, index) => {
+				doc.text(header, 20 + index * 40, y);
+			});
+
+			y += 10;
+
+			cart.forEach((item, index) => {
+				doc.text(item.name, 20, y); // Descripción
+				doc.text(`${item.quantity}`, 60, y); // Cantidad
+				doc.text(`$${item.price.toFixed(2)}`, 100, y); // Precio unitario
+				doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 140, y); // Total del producto
+				y += 10;
+			});
+
+			// Total a pagar
+			const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+			doc.text(`Total a pagar: $${totalAmount.toFixed(2)}`, 20, y + 10);
+
+			// Método de pago
+			doc.text("Método de pago: PayPal", 20, y + 20);
+
+			// Sello Digital del SAT (simulado)
+			doc.text("Sello Digital del SAT: [Sello Fiscal]", 20, y + 30);
+
+			// Código QR (simulado para el ejemplo)
+			// Para generar un código QR real, necesitarás una librería para crear códigos QR, como `qrcode.js`
+			const qrData = `Sello Fiscal: ${folio}, ${email}`; // Datos a codificar en el QR
+			QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H' }, (err, url) => {
+				if (err) throw err;
+				doc.addImage(url, 'PNG', 20, y + 50, 50, 50); // Agregar el QR al PDF
+				doc.save('factura.pdf');
+			});
+
+			// Agradecimiento
+			doc.text('¡Gracias por tu compra!', 20, y + 50);
+
+			// Guardar el archivo PDF localmente
+			doc.save('factura.pdf');
+		}
+
+
+	</script>
+</head>
+
+<body>
+	<header id="home" class="welcome-hero">
+		<!-- top-area Start -->
+		<div class="top-area">
+			<div class="header-area">
+				<!-- Start Navigation -->
+				<nav class="navbar navbar-default bootsnav navbar-sticky navbar-scrollspy" data-minus-value-desktop="70"
+					data-minus-value-mobile="55" data-speed="1000">
+					<div class="container">
+						<!-- Start Atribute Navigation -->
+						<div class="attr-nav">
+							<ul>
+								<li class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+										<div class="cart-container">
+											<button class="cart-icon" onclick="toggleCart()">
+												<i class="fas fa-shopping-cart"></i>
+												<span class="badge">0</span>
+											</button>
+											<div class="cart-dropdown">
+												<!-- Agregar un contenedor para manejar el desplazamiento -->
+												<div class="cart-content">
+													<ul class="cart-list"></ul>
+												</div>
+												<div class="cart-footer">
+													<p class="total">Total: $0.00</p>
+													<button class="clear-cart-btn" onclick="clearCart()">Vaciar Carrito</button>
+													<button class="clear-cart-btn" onclick="openModal()">Comprar
+														Carrito</button>
+												</div>
+											</div>
+										</div>
+									</a>
+								</li><!--/.dropdown-->
+							</ul>
+						</div><!--/.attr-nav-->
+						<!-- End Atribute Navigation -->
+
+						<!-- Start Header Navigation -->
+						<div class="navbar-header">
+							<button type="button" class="navbar-toggle" data-toggle="collapse"
+								data-target="#navbar-menu">
+								<i class="fa fa-bars"></i>
+							</button>
+							<a class="navbar-brand" href="index.html">KASS</a>
+						</div><!--/.navbar-header-->
+						<!-- End Header Navigation -->
+
+						<!-- Collect the nav links, forms, and other content for toggling -->
+						<div class="collapse navbar-collapse menu-ui-design" id="navbar-menu">
+							<ul class="nav navbar-nav navbar-center" data-in="fadeInDown" data-out="fadeOutUp">
+								<!-- Opción Inicio -->
+								<li><a href="index.html">Inicio</a></li>
+
+								<!-- Opción Joyas con submenú -->
+								<li class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown">Joyas</a>
+									<ul class="dropdown-menu">
+										<li><a href="alta_gama.html">Alta Gama</a></li>
+										<li><a href="#">Fantasía</a></li>
+									</ul>
+								</li>
+
+								<!-- Opción Ofertas -->
+								<li><a href="Ofertas.html">Ofertas</a></li>
+							</ul><!--/.nav -->
+						</div><!-- /.navbar-collapse -->
+					</div><!--/.container-->
+				</nav><!--/nav-->
+				<!-- End Navigation -->
+			</div><!--/.header-area-->
+			<div class="clearfix"></div>
+		</div><!-- /.top-area-->
+		<!-- top-area End -->
+	</header>
+
+	<!--Modal Pago -->
+	<div id="checkoutModal" class="modal">
+		<div class="modal-content">
+			<span class="close" onclick="closeModal()">&times;</span>
+			<h2>Finalizar Compra</h2>
+			<label for="name">Nombre del cliente:</label>
+			<input type="text" id="name" placeholder="Ingresa tu nombre">
+			<label for="email">Correo electrónico:</label>
+			<input type="email" id="email" placeholder="Ingresa tu correo">
+			<button onclick="processPayment()">Pagar</button>
+		</div>
+	</div>
+
+    <!-- Sección del banner -->
+    <section class="banner">
+        <!-- La imagen está dentro de la sección -->
+        <img src="assets/images/ban3.jpg" alt="Banner" class="banner-image">
+        <div class="banner-content">
+            <h1>Bienvenido a Joyeria de Fantasia</h1>
+            <p>Ofrecemos joyería de fantasía accesible y moderna, perfecta para quienes buscan piezas únicas y de tendencia.</p>
+        </div>
+    </section>
+
+
+	<!--new-arrivals start ARETES-->
+	<section id="new-arrivals" class="new-arrivals">
+		<div class="container">
+			<div class="section-header">
+				<h2>ARETES</h2>
+			</div><!--/.section-header-->
+			<div class="new-arrivals-content">
+				<div class="row">
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a1.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 33, 
+											name: 'Arete globo', 
+											price: 65.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a1.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete globo</a></h4>
+							<p class="arrival-product-price">$65.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a2.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 34, 
+											name: 'Arete pareja', 
+											price: 59.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a2.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete pareja</a></h4>
+							<p class="arrival-product-price">59.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a3.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 35, 
+											name: 'Arete corazon dorado', 
+											price: 69.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a3.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete corazon dorado</a></h4>
+							<p class="arrival-product-price">$69.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a4.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 36, 
+											name: 'Arete largo', 
+											price: 59.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a4.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete largo</a></h4>
+							<p class="arrival-product-price">$59.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a5.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 37, 
+											name: 'Arete largo verde', 
+											price: 49.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a5.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete largo verde</a></h4>
+							<p class="arrival-product-price">$49.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a6.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 38, 
+											name: 'Arete cherry', 
+											price: 48.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a6.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete cherry</a></h4>
+							<p class="arrival-product-price">$48.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a7.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 39, 
+											name: 'Arete gotas (dos pares)', 
+											price: 97.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a7.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete gotas (dos pares)</a></h4>
+							<p class="arrival-product-price">$97.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Aretes/a8.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 40, 
+											name: 'Arete corazones', 
+											price: 46.00,
+											image: 'assets/images/collection/Fantasy/Aretes/a8.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arete corazones</a></h4>
+							<p class="arrival-product-price">$46.00</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.new-arrivals-->
+	<!--new-arrivals end -->
+	
+
+    <!--new-arrivals start PINZAS-->
+	<section id="new-arrivals" class="new-arrivals">
+		<div class="container">
+			<div class="section-header">
+				<h2>ANILLOS</h2>
+			</div><!--/.section-header-->
+			<div class="new-arrivals-content">
+				<div class="row">
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a1.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 41, 
+											name: 'Anillo pareja', 
+											price: 30.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a1.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Anillo pareja</a></h4>
+							<p class="arrival-product-price">$30.00</p>
+						</div>
+					</div>
+					
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a2.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 42, 
+											name: 'Mariposa morada', 
+											price: 39.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a2.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Mariposa morada</a></h4>
+							<p class="arrival-product-price">$39.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a3.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 43, 
+											name: 'Playa', 
+											price: 29.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a3.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Playa</a></h4>
+							<p class="arrival-product-price">$29.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a4.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 44, 
+											name: 'Serpiente', 
+											price: 32.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a4.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Serpiente</a></h4>
+							<p class="arrival-product-price">$32.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a5.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 45, 
+											name: 'Pareja rosa', 
+											price: 59.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a5.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Pareja rosa</a></h4>
+							<p class="arrival-product-price">$59.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a6.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 46, 
+											name: 'Mariposa blanca', 
+											price: 38.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a6.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Mariposa blanca</a></h4>
+							<p class="arrival-product-price">$38.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a7.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 47, 
+											name: 'Corazon', 
+											price: 58.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a7.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Corazon</a></h4>
+							<p class="arrival-product-price">$58.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Anillos/a8.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 48, 
+											name: 'Corazon rojo', 
+											price: 40.00,
+											image: 'assets/images/collection/Fantasy/Anillos/a8.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Corazon rojo</a></h4>
+							<p class="arrival-product-price">$40.00</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.new-arrivals-->
+	<!--new-arrivals end -->
+
+ <!--new-arrivals start PULSERAS-->
+	<section id="new-arrivals" class="new-arrivals">
+		<div class="container">
+			<div class="section-header">
+				<h2>PULSERAS</h2>
+			</div><!--/.section-header-->
+			<div class="new-arrivals-content">
+				<div class="row">
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b1.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 49, 
+											name: 'Piedras rosas', 
+											price: 69.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b1.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Piedras rosas</a></h4>
+							<p class="arrival-product-price">$69.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b2.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 50, 
+											name: 'Dorada infinita', 
+											price: 79.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b2.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Dorada infinita</a></h4>
+							<p class="arrival-product-price">$79.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b3.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 51, 
+											name: 'Flores doradas', 
+											price: 56.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b3.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Flores doradas</a></h4>
+							<p class="arrival-product-price">$56.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b4.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 52, 
+											name: 'Cadena corazon', 
+											price: 79.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b4.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Cadena corazon</a></h4>
+							<p class="arrival-product-price">$79.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b5.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 53, 
+											name: 'Trenza plateada', 
+											price: 59.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b5.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Trenza plateada</a></h4>
+							<p class="arrival-product-price">$59.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b6.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 54, 
+											name: 'Juegos dorados', 
+											price: 98.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b6.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Juegos dorados</a></h4>
+							<p class="arrival-product-price">$98.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b7.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 55, 
+											name: 'Perla', 
+											price: 47.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b7.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Perla</a></h4>
+							<p class="arrival-product-price">$47.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/Fantasy/Pulseras/b8.jpg" alt="new-arrivals images">
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 56, 
+											name: 'Margarita morada', 
+											price: 44.00,
+											image: 'assets/images/collection/Fantasy/Pulseras/b8.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Margarita morada</a></h4>
+							<p class="arrival-product-price">$44.00</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.new-arrivals-->
+	<!--new-arrivals end -->
+
+	<!--feature start -->
+	<section id="feature" class="feature">
+		<div class="container">
+			<div class="section-header">
+				<h2>PRODUCTOS DESTACADOS</h2>
+				<P>-----</P>
+			</div><!--/.section-header-->
+			<div class="feature-content">
+				<div class="row">
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f9.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(28 review)</span>
+								</p>
+								<h3><a href="#">Aretes largas</a></h3>
+								<h5>$43.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f10.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(31 review)</span>
+								</p>
+								<h3><a href="#">Brazalete rosa</a></h3>
+								<h5>$60.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f11.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(30 review)</span>
+								</p>
+								<h3><a href="#">Anillo infinito</a></h3>
+								<h5>$29.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f12.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(39 review)</span>
+								</p>
+								<h3><a href="#">Arete moño</a></h3>
+								<h5>$34.00</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.feature-->
+	<!--feature end -->
+
+	<!--blog start -->
+	<section id="blog" class="blog">
+		<div class="container">
+			<div class="section-header">
+				<h2>ULTIMAS NOVEDADES</h2>
+				<P>----</P>
+			</div><!--/.section-header-->
+			<div class="blog-content">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b4.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a>"El toque de distinción que tu mano merece"</a></h2>
+								<h3>"Anillos que cuentan tu historia, pieza por pieza"</h3>
+								<p>
+									Los anillos son más que solo adornos, son una declaración de estilo y actitud.
+									En nuestra nueva colección, cada anillo está diseñado para complementar tu estilo de
+									vida,
+									ya sea para un look diario o para ese momento especial que siempre recordarás.
+									¡Haz que tu mano hable por ti!
+								</p>
+							</div>
+						</div>
+
+					</div>
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b5.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a href="#">"Un Tributo a la Elegancia Atemporal"</a></h2>
+								<p>
+									Presentamos nuestra nueva colección de anillos y collares, una fusión sublime de lujo, 
+                                    arte y sofisticación. Cada pieza ha sido meticulosamente diseñada para capturar la esencia 
+                                    de la belleza clásica y contemporánea, con un enfoque en la artesanía de excelencia. 
+                                    Estas joyas exclusivas están hechas para resaltar la personalidad única de quien las porta, 
+                                    creando una declaración de estilo inconfundible.
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b6.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a href="#">"Nueva Colección de Collares: Un Viaje a la Belleza y el Lujo"</a></h2>
+								<p>
+									Presentamos nuestra nueva colección de collares, una línea de piezas únicas que capturan la 
+                                    esencia de la sofisticación y el lujo más refinado. Cada collar ha sido diseñado para realzar 
+                                    la belleza natural de quien lo lleva, con materiales exclusivos y un estilo inconfundible que 
+                                    marca la diferencia. La colección es un homenaje a la artesanía impecable y a la elegancia atemporal.
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.blog-->
+	<!--blog end -->
+
+	<!--footer start-->
+	<footer id="footer" class="footer">
+		<div class="container">
+			<div class="hm-footer-copyright text-center">
+				<div class="footer-social">
+					<!-- Redes sociales Instagram y TikTok -->
+					<a href="https://www.instagram.com/kass_accessories_/profilecard/?igsh=c3N2c28wbWkzcWVy"
+						target="_blank" aria-label="Instagram">
+						<i class="fa fa-instagram"></i>
+					</a>
+					<a href="https://www.tiktok.com/@kass.accesories?_t=8rMgldvQAUh&_r=1" target="_blank"
+						aria-label="TikTok">
+						<i class="fab fa-tiktok"></i> <!-- Ícono de TikTok con FontAwesome -->
+					</a>
+				</div>
+				<p>
+					&copy;copyright. Designed and developed by <a href="#">themesine</a> |
+					<a href="#" id="terms-btn">Terms & Conditions</a>
+				</p>
+			</div>
+		</div>
+
+		<!-- Scroll to Top Button -->
+		<div id="scroll-Top">
+			<div class="return-to-top">
+				<i class="fa fa-angle-up" id="scroll-top" data-toggle="tooltip" data-placement="top" title=""
+					data-original-title="Back to Top" aria-hidden="true"></i>
+			</div>
+		</div>
+	</footer>
+
+
+	<!-- Modal de Términos y Condiciones -->
+	<div id="termsModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Términos y Condiciones</h2>
+			<p>Bienvenido al sitio web de "Kass". Al acceder y utilizar nuestro sitio, aceptas cumplir con los
+				siguientes términos y condiciones.
+				Si no estás de acuerdo con alguno de estos términos, te recomendamos que no utilices este sitio.</p>
+			<br>
+
+			<p><strong>1. Condiciones de Uso del Sitio Web</strong></p>
+			<p><strong>1.1 Registro: </strong></p>
+			<p>Para realizar compras, los usuarios deben proporcionar información veraz y actualizada, como nombre
+				completo, dirección, correo electrónico y datos de pago. La privacidad de esta información está
+				protegida según nuestra Política de Privacidad.</p>
+			<p><strong>1.2 Edad Mínima: </strong></p>
+			<p>Los usuarios deben ser mayores de 18 años o contar con el consentimiento de un adulto para realizar
+				compras en el sitio.</p>
+			<p><strong>1.3 Uso Aceptable: </strong></p>
+			<p>No está permitido el uso del sitio web para fines ilegales o para transmitir material ofensivo, violento
+				o que infrinja derechos de terceros.</p>
+			<br>
+
+			<p><strong>2. Productos</strong></p>
+			<p><strong>1.1 Descripción de Productos: </strong></p>
+			<p>Intentamos describir nuestros productos con precisión. Sin embargo, las imágenes pueden diferir
+				ligeramente del producto real en cuanto a color y detalles debido a la naturaleza artesanal de nuestras
+				piezas y la configuración de pantalla de los dispositivos.</p>
+			<p><strong>1.2 Disponibilidad: </strong></p>
+			<p>Todos los productos están sujetos a disponibilidad. Nos reservamos el derecho de modificar o descontinuar
+				productos sin previo aviso.</p>
+			<p><strong>1.3 Uso Aceptable: </strong></p>
+			<br>
+
+			<p><strong>3. Proceso de Compra</strong></p>
+			<p><strong>3.1 Precios: </strong></p>
+			<p>Los precios mostrados en el sitio están expresados en [Moneda] e incluyen impuestos aplicables. Los
+				costos de envío se calcularán durante el proceso de compra y pueden variar según la ubicación de
+				entrega.</p>
+			<p><strong>3.2 Confirmación de Pedido</strong></p>
+			<p>Al realizar un pedido, recibirás un correo de confirmación. Esto no implica una aceptación definitiva de
+				la compra; nos reservamos el derecho de cancelar pedidos por razones de disponibilidad o error en el
+				precio.</p>
+			<p><strong>3.3 Pago: </strong></p>
+			<p>Aceptamos diversas formas de pago, incluyendo tarjetas de crédito y débito, PayPal y transferencias
+				bancarias. La información de pago es tratada de manera segura, y no almacenamos datos sensibles de pago
+				en nuestro sitio.</p>
+			<br>
+
+			<p><strong>4. Envíos y Entrega</strong></p>
+			<p><strong>4.1 Política de Devolución: </strong></p>
+			<p>Aceptamos devoluciones de productos en un plazo de [14 días] desde la recepción, siempre que estén en su
+				empaque original y en perfectas condiciones. Los gastos de envío de la devolución corren a cargo del
+				cliente.</p>
+			<p><strong>4.2 Excepciones: </strong></p>
+			<p>No se aceptan devoluciones de productos personalizados o hechos a medida, excepto en caso de defecto.</p>
+			<p><strong>4.3 Reembolsos: </strong></p>
+			<p>Una vez recibida la devolución y verificada, procederemos a emitir el reembolso en el método de pago
+				original.</p>
+			<br>
+
+			<p><strong>5. Cambios y Devoluciones</strong></p>
+			<p><strong>5.1 Opciones de Envío: </strong></p>
+			<p>Ofrecemos diferentes opciones de envío que serán indicadas al finalizar la compra.</p>
+			<p><strong>5.2 Tiempos de Entrega: </strong></p>
+			<p>Los tiempos de entrega varían según la ubicación y el método de envío elegido. Kass no se hace
+				responsable de retrasos causados por el servicio de mensajería.</p>
+			<p><strong>5.3 Seguimiento de Pedido: </strong></p>
+			<p>Proporcionaremos un número de seguimiento para que puedas rastrear el estado de tu pedido.</p>
+			<br>
+
+			<p><strong>6. Responsabilidad</strong></p>
+			<p>Nos reservamos el derecho de cambiar estos términos sin previo aviso.</p>
+		</div>
+	</div>
+	<!--footer end-->
+
+	<script>
+		// Obtén el modal
+		var modal = document.getElementById("termsModal");
+
+		// Obtén el botón de los términos y condiciones
+		var btn = document.getElementById("terms-btn");
+
+		// Obtén el botón de cierre (X)
+		var span = document.getElementsByClassName("close")[0];
+
+		// Cuando el usuario haga clic en el enlace de términos y condiciones, abre el modal
+		btn.onclick = function () {
+			modal.style.display = "block";
+		}
+
+		// Cuando el usuario haga clic en la "X", cierra el modal
+		span.onclick = function () {
+			modal.style.display = "none";
+		}
+
+		// Cuando el usuario haga clic en cualquier parte fuera del modal, ciérralo
+		window.onclick = function (event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
+		}
+	</script>
+
+	<!-- Include all js compiled plugins (below), or include individual files as needed -->
+
+	<script src="assets/js/jquery.js"></script>
+	<!--modernizr.min.js-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script
+	<!--bootstrap.min.js-->
+	<script src="assets/js/bootstrap.min.js"></script>
+	<!-- bootsnav js -->
+	<script src="assets/js/bootsnav.js"></script>
+	<!--owl.carousel.js-->
+	<script src="assets/js/owl.carousel.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+	<!--Custom JS-->
+	<script src="assets/js/custom.js"></script>
+
+</body>
+
+</html>

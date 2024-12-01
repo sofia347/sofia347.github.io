@@ -1,0 +1,941 @@
+/*==================================
+* Author        : "ThemeSine"
+* Template Name : Sinemkt  HTML Template
+* Version       : 1.0
+==================================== */
+
+/*==================================
+font-family: 'Roboto', sans-serif;
+==================================== */
+
+
+/*=========== TABLE OF CONTENTS ===========
+1.  General css (Reset code)
+2.  Top-area
+5.  New-arrivals  
+6.  Sofa-coolection
+7.  Features
+8.  Blog
+9.  Clients
+10. News-letter
+11. Footer
+==========================================*/
+
+* {
+    padding: 0;
+    margin: 0;
+    text-transform: none;
+}
+
+* {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -o-box-sizing: border-box;
+    -ms-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: #a09e9c;
+    background: #fff;
+    text-transform: capitalize;
+    max-width: 1920px;
+    margin: 0 auto;
+    overflow-x: hidden;
+}
+
+a,
+a:hover,
+a:active,
+a:focus {
+    display: inline-block;
+    text-decoration: none;
+    color: #616060;
+    font-size: 16px;
+    padding: 0;
+    font-weight: 500;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin: 0;
+    color: #5f5b57;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+p {
+    margin: 0;
+    color: #a09e9c;
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+img {
+    border: none;
+    max-width: 100%;
+    height: auto;
+}
+
+ul {
+    padding: 0;
+    margin: 0 auto;
+    list-style: none;
+}
+
+ul li {
+    list-style: none;
+
+}
+
+select,
+input,
+textarea,
+button {
+    box-shadow: none;
+    outline: 0 !important;
+}
+
+button {
+    background: transparent;
+    border: 0;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+[placeholder]:focus::-webkit-input-placeholder {
+    -webkit-transition: opacity 0.3s 0.3s ease;
+    -moz-transition: opacity 0.3s 0.3s ease;
+    -ms-transition: opacity 0.3s 0.3s ease;
+    -o-transition: opacity 0.3s 0.3s ease;
+    transition: opacity 0.3s 0.3s ease;
+    opacity: 0;
+}
+
+/* section-header */
+.section-header {
+    position: relative;
+    text-align: center;
+}
+
+.section-header h2 {
+    font-size: 30px;
+    font-weight: 500;
+}
+
+.section-header h2 span {
+    text-transform: lowercase;
+}
+
+/* section-header */
+
+/*=============Style css=========*/
+
+/*-------------------------------------
+        2. Top-area
+--------------------------------------*/
+/* Ajuste general del navbar */
+/* Estilo para la etiqueta de "OFERTA" */
+.sale-tag {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #e99c2e;
+    color: white;
+    padding: 5px 10px;
+    font-weight: bold;
+    font-size: 14px;
+    border-radius: 3px;
+    z-index: 1; /* Para que esté encima de la imagen */
+}
+
+/* Estilo para el precio original (tachado) */
+.arrival-product-price .original-price {
+    text-decoration: line-through;
+    color: #616060;
+    margin-right: 10px;
+    font-size: 16px;
+}
+
+/* Estilo para el precio con descuento */
+.arrival-product-price .discounted-price {
+    color: #e99c2e;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Estilo para el porcentaje de descuento */
+.arrival-product-price .discount-percentage {
+    color: #e99c2e;
+    font-size: 16px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+
+/*-------------------------------------
+        5. New-arrivals 
+--------------------------------------*/
+/* Estilo para la sección de las ofertas */
+.new-arrivals {
+    padding: 85px 0 70px;
+}
+
+.new-arrivals-content {
+    margin-top: 80px;
+}
+
+.single-new-arrival {
+    margin-bottom: 50px;
+    text-align: center;
+    position: relative; /* Necesario para posicionar la etiqueta "OFERTA" */
+}
+
+/* Estilo para la etiqueta "OFERTA" */
+.sale-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: red;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+/* Fondo y imagen */
+.single-new-arrival-bg {
+    position: relative;
+    width: 100%;
+    height: 310px;
+    background: #f8f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.single-new-arrival-bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: .3s linear;
+}
+
+.single-new-arrival-bg:hover img {
+    transform: scale(1.1);
+}
+
+.single-new-arrival-bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(106, 119, 129, .1);
+    transform: scale(0);
+    transition: .3s linear;
+}
+
+.single-new-arrival-bg:hover .single-new-arrival-bg-overlay {
+    transform: scale(1);
+}
+
+.new-arrival-cart {
+    position: absolute;
+    bottom: -14px;
+    z-index: 0;
+    left: 0;
+    width: 100%;
+    height: 35px;
+    background: #33383c;
+    transition: .3s linear;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.new-arrival-cart p {
+    float: left;
+    margin-left: 20px;
+    color: #fff;
+    font-size: 12px;
+    line-height: 3;
+}
+
+.new-arrival-cart p a {
+    color: #fff;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+.new-arrival-cart p span.lnr.lnr-cart {
+    margin-right: 10px;
+}
+
+.new-arrival-cart p span {
+    text-transform: lowercase;
+}
+
+p.arrival-review span {
+    margin-right: 15px;
+}
+
+.single-new-arrival-bg:hover .new-arrival-cart {
+    opacity: 1;
+    visibility: visible;
+    bottom: 0px;
+}
+
+/* Título */
+.single-new-arrival h4 a {
+    color: #5f5b57;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 26px 0 12px;
+}
+
+/* Precio */
+.arrival-product-price {
+    color: #5f5b57;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+/* Precio Original Tachado */
+.original-price {
+    text-decoration: line-through;
+    color: #a0a0a0;
+    margin-right: 10px;
+}
+
+/* Precio con Descuento */
+.discounted-price {
+    color: #e99c2e;
+    font-weight: bold;
+}
+
+/* Hover sobre los títulos de los productos */
+.single-new-arrival:hover h4 a {
+    color: #e99c2e;
+}
+
+.sale {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    width: 60px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+}
+
+.sale p {
+    color: #fff;
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 2.2;
+}
+
+.sale.bg-1 {
+    background: #ff0f0f;
+}
+
+
+/* ---------------------------
+     Banner
+    ----------------------------*/
+    .banner {
+        position: relative;
+        width: 100%;
+        height: 100vh; /* La altura será de toda la pantalla */
+        overflow: hidden; /* Esto es importante para evitar que la imagen se desborde */
+    }
+    
+    .banner-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Hace que la imagen cubra el área sin deformarse */
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: -1; /* Asegura que la imagen esté por detrás del contenido */
+    }
+    
+    /* Estilo del contenido en el banner */
+    .banner-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); /* Centra el texto */
+        color: black; /* Cambiamos el color del texto a negro */
+        text-align: center;
+        padding: 20px;
+        background-color: rgba(248, 206, 180, 0.7); /* Fondo cálido con tono beige-anaranjado */
+        border-radius: 10px;
+        text-transform: none;
+    }
+    
+    .banner h1 {
+        font-size: 12rem;
+        margin-bottom: 10px;
+        color: #000;
+    }
+    
+    .banner p {
+        font-size: 2rem;
+        color: #000;
+    }
+
+
+/*-------------------------------------       
+        8.  Blog
+--------------------------------------*/
+.blog {
+    padding: 80px 0;
+}
+
+/*.single-blog*/
+.single-blog {
+    -webkit-transition: 0.3s linear;
+    -moz-transition: 0.3s linear;
+    -ms-transition: 0.3s linear;
+    -o-transition: 0.3s linear;
+    transition: 0.3s linear;
+}
+
+.single-blog-img {
+    position: relative;
+    overflow: hidden;
+    -webkit-transition: 0.3s linear;
+    -moz-transition: 0.3s linear;
+    -ms-transition: 0.3s linear;
+    -o-transition: 0.3s linear;
+    transition: 0.3s linear;
+}
+
+.single-blog-img img {
+    width: auto;
+    height: auto;
+    -webkit-transition: .3s linear;
+    -moz-transition: .3s linear;
+    -ms-transition: .3s linear;
+    -o-transition: .3s linear;
+    transition: .3s linear;
+}
+
+.single-blog:hover img {
+    -webkit-transform: scale(1.3);
+    -moz-transform: scale(1.3);
+    -ms-transform: scale(1.3);
+    -o-transform: scale(1.3);
+    transform: scale(1.3);
+}
+
+.single-blog-img-overlay {
+    position: absolute;
+    content: "";
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, .3);
+    -webkit-transform: scale(0);
+    -moz-transform: scale(0);
+    -ms-transform: scale(0);
+    -o-transform: scale(0);
+    transform: scale(0);
+    -webkit-transition: .3s linear;
+    -moz-transition: .3s linear;
+    -ms-transition: .3s linear;
+    -o-transition: .3s linear;
+    transition: .3s linear;
+}
+
+.single-blog:hover .single-blog-img-overlay {
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -o-transform: scale(1);
+    transform: scale(1);
+}
+
+.single-blog-txt h2 a {
+    text-transform: initial;
+    margin: 0 0 15px 0;
+}
+
+.single-blog-txt h3,
+.single-blog-txt h3 a {
+    color: #bcb7b2;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.single-blog-txt h3 a {
+    margin: 0;
+}
+
+.single-blog-txt p {
+    font-size: 13px;
+    margin-top: 20px;
+    color: #95908b;
+}
+
+.single-blog:hover .single-blog-txt h2 a {
+    color: #e99c2e;
+}
+
+/*.single-blog*/
+
+
+/*-------------------------------------
+        10. News-letter
+--------------------------------------*/
+.newsletter {
+    padding: 120px 0 75px;
+}
+
+.hm-footer-widget {
+    margin-bottom: 30px;
+}
+
+.hm-foot-title h4 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 45px;
+}
+
+.hm-foot-menu ul li a {
+    color: #a09e9c;
+    font-size: 16px;
+    font-weight: 400;
+    margin-bottom: 15px;
+    -webkit-transition: .3s;
+    -moz-transition: .3s;
+    -ms-transition: .3s;
+    -o-transition: .3s;
+    transition: .3s;
+}
+
+.hm-foot-menu ul li a:hover {
+    color: #e99c2e;
+    -webkit-transform: translateX(10px);
+    -moz-transform: translateX(10px);
+    -ms-transform: translateX(10px);
+    -o-transform: translateX(10px);
+    transform: translateX(10px);
+}
+
+.hm-foot-para p {
+    font-size: 14px;
+    text-transform: initial;
+    margin-bottom: 25px;
+}
+
+/*hm-foot-email*/
+.hm-foot-email {
+    position: relative;
+}
+
+.foot-email-box .form-control {
+    background: #fff;
+    display: block;
+    padding: 25px 15px;
+    outline: 0 !important;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .2);
+    border: 0;
+}
+
+.foot-email-box input[type="text"] {
+    font-size: 14px;
+    color: #bcb7b2;
+}
+
+.foot-email-subscribe {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 100%;
+    background: transparent;
+    color: #e99c2e;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.foot-email-box .form-control:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, .4);
+}
+
+/*hm-foot-email*/
+
+
+/*-------------------------------------
+        11. Footer
+--------------------------------------*/
+/* Estilos para el pie de página */
+/* Footer */
+.footer {
+    background: #f8f9fd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Centrado horizontal */
+    flex-direction: column;
+    /* Centrado vertical de los elementos */
+    height: auto;
+    padding: 40px 0;
+    text-align: center;
+}
+
+/* Estilos para los párrafos en el footer */
+.hm-footer-copyright p,
+.hm-footer-copyright p a {
+    color: #a5adb3;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+/* Estilos de los iconos de redes sociales */
+.footer-social a i {
+    color: #a4aaaf;
+    /* Color base para los íconos */
+    margin: 0 15px;
+    font-size: 24px;
+    transition: color 0.3s, transform 0.3s;
+    /* Efecto de color y tamaño */
+}
+
+/* Ícono de Instagram */
+.footer-social a[href*="instagram"] i {
+    color: #E1306C;
+    /* Color característico de Instagram */
+}
+
+/* Ícono de TikTok */
+.footer-social a[href*="tiktok"] i {
+    color: #000000;
+    /* Color oscuro para TikTok */
+}
+
+/* Efecto hover para los íconos */
+.footer-social a:hover i {
+    color: #e99c2e;
+    /* Cambio de color a dorado */
+    transform: scale(1.2);
+    /* Aumento de tamaño */
+}
+
+
+/* Modal (ventana emergente) */
+/* Estilo del modal */
+.modal {
+    display: none;
+    /* Oculto por defecto */
+    position: fixed;
+    /* Posición fija sobre la página */
+    z-index: 1000;
+    /* Asegúrate de que esté por encima de otros elementos */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Fondo oscuro semitransparente */
+    overflow: auto;
+    /* Hacer que el contenido del modal sea desplazable si es necesario */
+    padding-top: 60px;
+    /* Espacio desde arriba para el modal */
+}
+
+/* Contenido del modal */
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Agregar sombra alrededor del modal */
+    border-radius: 8px;
+    /* Bordes redondeados para el modal */
+}
+
+/* Estilo para el botón de cerrar (X) */
+.close {
+    color: #aaa;
+    font-size: 28px;
+    font-weight: bold;
+    float: right;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+/* Títulos y texto dentro del modal */
+.modal-content h2 {
+    color: #333;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.modal-content p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.6;
+}
+
+
+/*===============================
+    Scroll Top
+===============================*/
+#scroll-Top .return-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    display: none;
+    width: 40px;
+    line-height: 40px;
+    height: 40px;
+    text-align: center;
+    font-size: 20px;
+    cursor: pointer;
+    color: #fff;
+    background: #e99c2e;
+    border: 1px solid #e99c2e;
+    border-radius: 50%;
+    -webkit-transition: .5s;
+    -moz-transition: .5s;
+    -ms-transition: .5s;
+    -o-transition: .5s;
+    transition: .5s;
+    z-index: 2;
+}
+
+#scroll-Top .return-to-top:hover {
+    background: #fff;
+    color: #e99c2e;
+    border: 1px solid #e99c2e;
+}
+
+#scroll-Top .return-to-top i {
+    position: relative;
+    bottom: 0;
+
+}
+
+#scroll-Top .return-to-top i {
+    position: relative;
+    animation-name: example;
+    animation-direction: alternate;
+    animation-iteration-count: infinite;
+    animation-duration: 1s;
+}
+
+@keyframes example {
+    0% {
+        bottom: 0px;
+    }
+
+    100% {
+        bottom: 7px;
+    }
+}
+
+/*CARRITO*/
+.cart-icon {
+    position: relative;
+    background-color: transparent;
+    border: none;
+    font-size: 29px; /* Aumentar el tamaño del ícono */
+    color: #616060; /* Color neutro */
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.cart-icon:hover {
+    color: #e7b2b2; /* Cambiar a color dorado al pasar el cursor */
+}
+
+.cart-icon .badge {
+    position: absolute;
+    top: -5px;
+    right: -15px; /* Mueve el número más hacia la derecha */
+    background: #faaab1;
+    color: #fff;
+    border-radius: 50%;
+    padding: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.cart-dropdown {
+    position: absolute;
+    right: 0;
+    top: 50px;
+    width: 350px;
+    background: #ffffff;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    z-index: 1000;
+    border-radius: 8px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.cart-dropdown.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.cart-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-list li:last-child {
+    border-bottom: none;
+}
+
+.cart-list img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 10px;
+    border-radius: 5px;
+}
+
+.cart-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cart-footer {
+    text-align: right;
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+.clear-cart-btn {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #e9616c;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.clear-cart-btn:hover {
+    background-color: #f5e0e2; /* Más oscuro al pasar el cursor */
+}
+
+.cart-list button {
+    margin-left: auto; /* Empuja el botón a la derecha */
+    background: transparent; /* Fondo transparente */
+    color: #616161; /* Color del ícono */
+    border: none; /* Sin borde */
+    font-size: 40px; /* Tamaño más grande para la "X" */
+    cursor: pointer; /* Manito de clic */
+    transition: color 0.3s ease; /* Suaviza el cambio de color */
+}
+
+.cart-list button:hover {
+    color: #c92332; /* Color más oscuro al pasar el cursor */
+}
+
+.total {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+
+.total {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 10px;
+}
+
+.cart-dropdown {
+    display: none;
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.cart-dropdown.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.cart-content {
+    max-height: 300px; /* Altura máxima del contenedor de la lista */
+    overflow-y: auto; /* Activa el desplazamiento vertical */
+    padding-right: 10px; /* Espacio para evitar que el scroll se superponga con el contenido */
+}
+
+/*VENTANA DE PAGO*/
+.modal {
+    display: none; /* Ocultar por defecto */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 300px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.modal-content .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}

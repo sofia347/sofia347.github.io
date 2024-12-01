@@ -1,0 +1,1047 @@
+<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="https://fonts.googleapis.com/css?family=Roboto:100,100i,300,300i,400,400i,500,500i,700,700i,900,900i"
+		rel="stylesheet">
+	<title>KASS</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+	<link rel="shortcut icon" type="image/icon" href="assets/images/Logo.png" />
+	<link rel="stylesheet" href="assets/css/font-awesome.min.css">
+	<link rel="stylesheet" href="assets/css/linearicons.css">
+	<link rel="stylesheet" href="assets/css/animate.css">
+	<link rel="stylesheet" href="assets/css/owl.carousel.min.css">
+	<link rel="stylesheet" href="assets/css/owl.theme.default.min.css">
+	<link rel="stylesheet" href="assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="assets/css/bootsnav.css">
+	<link rel="stylesheet" href="assets/css/style.css">
+	<link rel="stylesheet" href="assets/css/responsive.css">
+	<!--<script src="server.js"></script>-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+	<script>
+		// Variables globales
+		let cart = [];
+
+		// Función para alternar la visibilidad del carrito
+		function toggleCart() {
+			document.querySelector('.cart-dropdown').classList.toggle('active');
+		}
+
+		// Actualizar ícono del carrito
+		function updateCartIcon() {
+			const badge = document.querySelector('.badge');
+			badge.textContent = cart.reduce((total, item) => total + item.quantity, 0);
+		}
+
+		// Renderizar el carrito
+		function renderCart() {
+			const cartList = document.querySelector('.cart-list');
+			const totalText = document.querySelector('.total');
+			cartList.innerHTML = ''; // Limpia la lista
+			let total = 0;
+
+			cart.forEach((item, index) => {
+				total += item.price * item.quantity;
+				cartList.innerHTML += `
+                    <li>
+                        <img src="${item.image}" alt="${item.name}">
+                        <div>
+                            <span>${item.name} (x${item.quantity})</span><br>
+                            <span>$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                        <button onclick="removeFromCart(${index})">&times;</button> <!-- Solo la "X" -->
+                    </li>
+                `;
+			});
+
+			totalText.textContent = `Total: $${total.toFixed(2)}`;
+		}
+
+		// Agregar producto al carrito
+		function addToCart(product) {
+			const existingProduct = cart.find(item => item.id === product.id);
+
+			if (existingProduct) {
+				existingProduct.quantity++;
+			} else {
+				cart.push({ ...product, quantity: 1 });
+			}
+
+			updateCartIcon();
+			renderCart();
+			saveCart();
+		}
+
+		// Eliminar producto del carrito
+		function removeFromCart(index) {
+			if (cart[index].quantity > 1) {
+				cart[index].quantity--; // Reduce la cantidad en 1
+			} else {
+				cart.splice(index, 1); // Elimina el producto si la cantidad es 0
+			}
+
+			updateCartIcon(); // Actualiza el ícono del carrito
+			renderCart(); // Renderiza el carrito actualizado
+			saveCart(); // Guarda los cambios en localStorage
+		}
+
+		// Vaciar carrito
+		function clearCart() {
+			cart = [];
+			updateCartIcon();
+			renderCart();
+			saveCart();
+		}
+
+		// Guardar carrito en localStorage
+		function saveCart() {
+			localStorage.setItem('cart', JSON.stringify(cart));
+		}
+
+		// Cargar carrito desde localStorage
+		function loadCart() {
+			const savedCart = JSON.parse(localStorage.getItem('cart')) || [];
+			cart = savedCart;
+			updateCartIcon();
+			renderCart();
+		}
+
+		// Inicializar
+		document.addEventListener('DOMContentLoaded', loadCart);
+
+		function openModal() {
+			document.getElementById("checkoutModal").style.display = "block";
+		}
+		
+		function closeModal() {
+			// Cierra el modal
+			document.getElementById("checkoutModal").style.display = "none";
+		}
+
+
+		function processPayment() {
+			const email = document.getElementById("email").value;
+			if (!email) {
+				alert("Por favor, ingresa tu correo.");
+				return;
+			}
+
+			// Redirigir a PayPal (Simulación de pago)
+			window.open(`https://www.paypal.com/cgi-bin/webscr?cmd=_cart&business=TU_EMAIL_PAYPAL&currency_code=USD&upload=1&amount_1=10.00&item_name_1=Carrito`, '_blank');
+
+
+			// Generar la factura después de pagar
+			generateInvoice();
+		}
+		function generateInvoice() {
+			const { jsPDF } = window.jspdf;
+			const doc = new jsPDF();
+
+			// Título
+			doc.setFontSize(18);
+			doc.text("Factura Electrónica", 20, 20);
+
+			// Información de la empresa
+			doc.setFontSize(12);
+			doc.text("KASS Inc.", 20, 30);
+			doc.text("Av. Adolfo López Mateos Ote. 1801, Bona Gens, 20256 Aguascalientes, Ags.", 20, 40);
+			doc.text("RFC: RWX12345678MXP", 20, 50);
+			doc.text("Tel: 555-1234-5678", 20, 60);
+			doc.text("Correo: Kass.accesories@gmail.com", 20, 70);
+
+			// Fecha y folio
+			const date = new Date().toLocaleString();
+			const folio = Math.floor(Math.random() * 90000) + 10000; // Generar un número aleatorio de 5 dígitos
+			doc.text(`Fecha: ${date}`, 20, 80);
+			doc.text(`Folio: ${folio}`, 20, 90);
+
+			// Información del cliente
+			const customerName = document.getElementById("name").value;
+			const email = document.getElementById("email").value;
+
+			doc.text(`Cliente: ${customerName}`, 20, 100);
+			doc.text(`Correo: ${email}`, 20, 110);
+
+			// Detalle de productos (Tabla)
+			let y = 120;
+			const productTableHeader = ["Descripción", "Cantidad", "Precio Unitario", "Total"];
+			doc.setFontSize(10);
+			productTableHeader.forEach((header, index) => {
+				doc.text(header, 20 + index * 40, y);
+			});
+
+			y += 10;
+
+			cart.forEach((item, index) => {
+				doc.text(item.name, 20, y); // Descripción
+				doc.text(`${item.quantity}`, 60, y); // Cantidad
+				doc.text(`$${item.price.toFixed(2)}`, 100, y); // Precio unitario
+				doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 140, y); // Total del producto
+				y += 10;
+			});
+
+			// Total a pagar
+			const totalAmount = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+			doc.text(`Total a pagar: $${totalAmount.toFixed(2)}`, 20, y + 10);
+
+			// Método de pago
+			doc.text("Método de pago: PayPal", 20, y + 20);
+
+			// Sello Digital del SAT (simulado)
+			doc.text("Sello Digital del SAT: [Sello Fiscal]", 20, y + 30);
+
+			// Código QR (simulado para el ejemplo)
+			// Para generar un código QR real, necesitarás una librería para crear códigos QR, como `qrcode.js`
+			const qrData = `Sello Fiscal: ${folio}, ${email}`; // Datos a codificar en el QR
+			QRCode.toDataURL(qrData, { errorCorrectionLevel: 'H' }, (err, url) => {
+				if (err) throw err;
+				doc.addImage(url, 'PNG', 20, y + 50, 50, 50); // Agregar el QR al PDF
+				doc.save('factura.pdf');
+			});
+
+			// Agradecimiento
+			doc.text('¡Gracias por tu compra!', 20, y + 50);
+
+			// Guardar el archivo PDF localmente
+			doc.save('factura.pdf');
+		}
+
+
+	</script>
+
+</head>
+
+<body>
+	<header id="home" class="welcome-hero">
+		<!-- top-area Start -->
+		<div class="top-area">
+			<div class="header-area">
+				<!-- Start Navigation -->
+				<nav class="navbar navbar-default bootsnav navbar-sticky navbar-scrollspy" data-minus-value-desktop="70"
+					data-minus-value-mobile="55" data-speed="1000">
+					<div class="container">
+						<!-- Start Atribute Navigation -->
+						<div class="attr-nav">
+							<ul>
+								<li class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+										<div class="cart-container">
+											<button class="cart-icon" onclick="toggleCart()">
+												<i class="fas fa-shopping-cart"></i>
+												<span class="badge">0</span>
+											</button>
+											<div class="cart-dropdown">
+												<!-- Agregar un contenedor para manejar el desplazamiento -->
+												<div class="cart-content">
+													<ul class="cart-list"></ul>
+												</div>
+												<div class="cart-footer">
+													<p class="total">Total: $0.00</p>
+													<button class="clear-cart-btn" onclick="clearCart()">Vaciar
+														Carrito</button>
+													<button class="clear-cart-btn" onclick="openModal()">Comprar
+														Carrito</button>
+												</div>
+											</div>
+										</div>
+									</a>
+								</li><!--/.dropdown-->
+							</ul>
+						</div><!--/.attr-nav-->
+						<!-- End Atribute Navigation -->
+
+						<!-- Start Header Navigation -->
+						<div class="navbar-header">
+							<a class="navbar-brand" href="index.html">KASS</a>
+						</div><!--/.navbar-header-->
+						<!-- End Header Navigation -->
+
+						<!-- Collect the nav links, forms, and other content for toggling -->
+						<div class="collapse navbar-collapse menu-ui-design" id="navbar-menu">
+							<ul class="nav navbar-nav navbar-center" data-in="fadeInDown" data-out="fadeOutUp">
+								<!-- Opción Inicio -->
+								<li><a href="index.html">Inicio</a></li>
+
+								<!-- Opción Joyas con submenú -->
+								<li class="dropdown">
+									<a href="#" class="dropdown-toggle" data-toggle="dropdown">Joyas</a>
+									<ul class="dropdown-menu">
+										<li><a href="alta_gama.html">Alta Gama</a></li>
+										<li><a href="Fantasy.html">Fantasía</a></li>
+									</ul>
+								</li>
+
+								<!-- Opción Ofertas -->
+								<li><a href="Ofertas.html">Ofertas</a></li>
+							</ul><!--/.nav -->
+						</div><!-- /.navbar-collapse -->
+					</div><!--/.container-->
+				</nav><!--/nav-->
+				<!-- End Navigation -->
+			</div><!--/.header-area-->
+			<div class="clearfix"></div>
+		</div><!-- /.top-area-->
+		<!-- top-area End -->
+	</header>
+
+	<!--Modal Pago -->
+	<div id="checkoutModal" class="modal">
+		<div class="modal-content">
+			<span class="close" onclick="closeModal()">&times;</span>
+			<h2>Finalizar Compra</h2>
+			<label for="name">Nombre del cliente:</label>
+			<input type="text" id="name" placeholder="Ingresa tu nombre">
+			<label for="email">Correo electrónico:</label>
+			<input type="email" id="email" placeholder="Ingresa tu correo">
+			<button onclick="processPayment()">Pagar</button>
+		</div>
+	</div>
+
+
+
+	<div id="header-carousel" class="carousel slide carousel-fade" data-ride="carousel">
+		<!--/.carousel-indicator -->
+		<ol class="carousel-indicators">
+			<li data-target="#header-carousel" data-slide-to="0" class="active"><span class="small-circle"></span></li>
+			<li data-target="#header-carousel" data-slide-to="1"><span class="small-circle"></span></li>
+			<li data-target="#header-carousel" data-slide-to="2"><span class="small-circle"></span></li>
+		</ol>
+		<!--/.carousel-indicator -->
+
+		<!-- Carrusel de imágenes -->
+		<div class="carousel-inner" role="listbox">
+			<!-- Primer slide con fondo -->
+			<div class="item active">
+				<div class="single-slide-item slide1"
+					style="background-image: url('assets/images/slider/Carrusel1.jpg');">
+					<div class="container">
+						<div class="welcome-hero-content">
+							<div class="single-welcome-hero">
+								<div class="welcome-hero-txt">
+									<!-- Título y Botón, centrados sobre la imagen -->
+									<h4>Para un estilo con Glamour</h4>
+									<h2>Joyeria de Alta Gama</h2>
+									<button class="btn-cart welcome-add-cart welcome-more-info"
+										onclick="window.location.href='alta_gama.html'">
+										VER MÁS
+									</button>
+								</div><!--/.welcome-hero-txt-->
+							</div><!--/.single-welcome-hero-->
+						</div><!--/.welcome-hero-content-->
+					</div><!-- /.container-->
+				</div><!-- /.single-slide-item-->
+			</div><!-- /.item .active-->
+
+			<!-- Segundo slide con fondo -->
+			<div class="item">
+				<div class="single-slide-item slide2"
+					style="background-image: url('assets/images/slider/Carrusel2.jpg');">
+					<div class="container">
+						<div class="welcome-hero-content">
+							<div class="single-welcome-hero">
+								<div class="welcome-hero-txt">
+									<h4>El Glamour cada vez más cerca</h4>
+									<h2>Joyeria de Fantasia</h2>
+									<button class="btn-cart welcome-add-cart welcome-more-info"
+										onclick="window.location.href='Fantasy.html'">
+										VER MÁS
+									</button>
+								</div><!--/.welcome-hero-txt-->
+							</div><!--/.single-welcome-hero-->
+						</div><!--/.welcome-hero-content-->
+					</div><!-- /.container-->
+				</div><!-- /.single-slide-item-->
+			</div><!-- /.item-->
+
+			<!-- Tercer slide con fondo -->
+			<div class="item">
+				<div class="single-slide-item slide3"
+					style="background-image: url('assets/images/slider/Carrusel3.jpg');">
+					<div class="container">
+						<div class="welcome-hero-content">
+							<div class="single-welcome-hero">
+								<div class="welcome-hero-txt">
+									<h4>Para estar a la moda</h4>
+									<h2>Joyeria en Tendencia</h2>
+									<button class="btn-cart welcome-add-cart welcome-more-info"
+										onclick="window.location.href='Ofertas.html'">
+										VER MÁS
+									</button>
+								</div><!--/.welcome-hero-txt-->
+							</div><!--/.single-welcome-hero-->
+						</div><!--/.welcome-hero-content-->
+					</div><!-- /.container-->
+				</div><!-- /.single-slide-item-->
+			</div><!-- /.item-->
+		</div><!-- /.carousel-inner-->
+	</div><!--/#header-carousel-->
+
+	<!--populer-products start -->
+	<section id="populer-products" class="populer-products">
+		<div class="container">
+			<div class="populer-products-content">
+				<div class="row">
+					<div class="col-md-3">
+						<div class="single-populer-products">
+							<div class="single-populer-product-img mt40">
+								<img src="assets/images/populer-products/p1.jpg" alt="populer-products images">
+							</div>
+							<h2><a href="#">LUNA</a></h2>
+							<div class="single-populer-products-para">
+								<p>Collar de la Luna/Sol que refleja generosidad y abundancia</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6">
+						<div class="single-populer-products">
+							<div class="single-inner-populer-products">
+								<div class="row">
+									<div class="col-md-4 col-sm-12">
+										<div class="single-inner-populer-product-img">
+											<img src="assets/images/populer-products/p2.jpg"
+												alt="populer-products images">
+										</div>
+									</div>
+									<div class="col-md-8 col-sm-12">
+										<div class="single-inner-populer-product-txt">
+											<h2>
+												Anillos minimalistas de Alta Gama
+											</h2>
+											<p>
+												Anillos de oro y plata en diferentes presentaciones para ocasiones
+												casuales y
+												estilos sofisticados de KASS.
+											</p>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-3">
+						<div class="single-populer-products">
+							<div class="single-populer-products">
+								<div class="single-populer-product-img">
+									<img src="assets/images/populer-products/p3.jpg" alt="populer-products images">
+								</div>
+								<p>-</p>
+								<h2>Conjunto de joyeria</h2>
+								<div class="single-populer-products-para">
+									<p>Juego de joyeria con diferentes productos para ocasiones formales y con un estilo
+										de Alta Gama</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section>
+	<!--populer-products end-->
+
+	<!--new-arrivals start -->
+	<section id="new-arrivals" class="new-arrivals">
+		<div class="container">
+			<div class="section-header">
+				<h2>NUEVOS PRODUCTOS</h2>
+			</div><!--/.section-header-->
+			<div class="new-arrivals-content">
+				<div class="row">
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals1.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="sale bg-1">
+									<p>sale</p>
+								</div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 1, 
+											name: 'Reloj de correa azul', 
+											price: 875.00,
+											image: 'assets/images/collection/arrivals1.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Reloj de correa azul</a></h4>
+							<p class="arrival-product-price">$875.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals2.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="sale bg-2">
+									<p>sale</p>
+								</div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 2, 
+											name: 'Cadena y esclava de oro', 
+											price: 6899.00,
+											image: 'assets/images/collection/arrivals2.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Cadena y esclava de oro</a></h4>
+							<p class="arrival-product-price">$6899.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals3.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 3, 
+											name: 'Anillo de corazon Fantasy', 
+											price: 98.00,
+											image: 'assets/images/collection/arrivals3.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Anillo de corazon Fantasy</a></h4>
+							<p class="arrival-product-price">$98.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals4.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="sale bg-1">
+									<p>sale</p>
+								</div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 4, 
+											name: 'Anillo de compromiso', 
+											price: 7899.00,
+											image: 'assets/images/collection/arrivals4.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Anillo de compromiso</a></h4>
+							<p class="arrival-product-price">$7899.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals5.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 5, 
+											name: 'Pink Brazalete', 
+											price: 549.00,
+											image: 'assets/images/collection/arrivals2.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Pink Brazalete</a></h4>
+							<p class="arrival-product-price">$549.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals7.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="sale bg-1">
+									<p>sale</p>
+								</div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 7, 
+											name: 'Tiara de piedra azul', 
+											price: 480.00,
+											image: 'assets/images/collection/arrivals7.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Tiara de piedra azul</a></h4>
+							<p class="arrival-product-price">$480.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals6.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="sale bg-2">
+									<p>sale</p>
+								</div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 6, 
+											name: 'Arracadas Doradas de trenza', 
+											price: 157.00,
+											image: 'assets/images/collection/arrivals6.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Arracadas Doradas de trenza</a></h4>
+							<p class="arrival-product-price">$157.00</p>
+						</div>
+					</div>
+
+					<div class="col-md-3 col-sm-4">
+						<div class="single-new-arrival">
+							<div class="single-new-arrival-bg">
+								<img src="assets/images/collection/arrivals8.jpg" alt="new-arrivals images">
+								<div class="single-new-arrival-bg-overlay"></div>
+								<div class="new-arrival-cart">
+									<p>
+										<span class="lnr lnr-cart"></span>
+										<button onclick="addToCart({ 
+											id: 8, 
+											name: 'Collar flor de plata', 
+											price: 940.00,
+											image: 'assets/images/collection/arrivals8.jpg'
+										})">Añadir
+											al carrito</button>
+									</p>
+									<p class="arrival-review pull-right">
+										<span class="lnr lnr-heart"></span>
+										<span class="lnr lnr-frame-expand"></span>
+									</p>
+								</div>
+							</div>
+							<h4><a href="#">Collar flor de plata</a></h4>
+							<p class="arrival-product-price">$940.00</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.new-arrivals-->
+	<!--new-arrivals end -->
+
+	<!--sofa-collection start -->
+	<section id="sofa-collection">
+		<div class="owl-carousel owl-theme" id="collection-carousel">
+			<div class="sofa-collection collectionbg1">
+				<div class="container">
+					<div class="sofa-collection-txt">
+						<h2>"Crea Tu Propia Historia con Joyería Personalizada"</h2>
+						<p>
+							La joyería es mucho más que un accesorio: es una extensión de tu identidad.
+							En nuestra colección de alta gama, te ofrecemos la oportunidad de crear piezas
+							únicas que no solo siguen las tendencias, sino que las marcan.
+							Además, nuestras joyas están siempre en sintonía con las últimas tendencias,
+							asegurando que cada pieza esté a la vanguardia del lujo y el estilo.
+						</p>
+					</div>
+				</div>
+				<!-- Agregar imagen aquí -->
+				<img src="assets/images/ban1.jpg" alt="Sofa Collection Banner" class="sofa-banner-img">
+			</div><!--/.sofa-collection-->
+			<div class="sofa-collection collectionbg2">
+				<div class="container">
+					<div class="sofa-collection-txt">
+						<h2>"La Joyería de Alta Gama Hecha a Medida para Ti"</h2>
+						<p>
+							En nuestra colección de joyería, cada pieza es una declaración de elegancia y sofisticación.
+							Nos especializamos en crear diseños exclusivos y personalizados, pensados para aquellos que
+							buscan
+							algo más que simplemente seguir la moda: buscan definirla. Cada joya que ofrecemos está
+							hecha a mano,
+							con los materiales más finos y una atención al detalle que garantiza una calidad
+							insuperable.
+						</p>
+					</div>
+				</div>
+				<!-- Agregar imagen aquí -->
+				<img src="assets/images/ban2.jpg" alt="Dining Table Collection Banner" class="sofa-banner-img">
+			</div><!--/.sofa-collection-->
+		</div><!--/.collection-carousel-->
+	</section><!--/.sofa-collection-->
+
+	<!--sofa-collection end -->
+
+	<!--feature start -->
+	<section id="feature" class="feature">
+		<div class="container">
+			<div class="section-header">
+				<h2>PRODUCTOS DESTACADOS</h2>
+				<P>-----</P>
+			</div><!--/.section-header-->
+			<div class="feature-content">
+				<div class="row">
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f1.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(35 review)</span>
+								</p>
+								<h3><a href="#">Llavero Rosas</a></h3>
+								<h5>$130.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f2.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(31 review)</span>
+								</p>
+								<h3><a href="#">Accesorio Flor</a></h3>
+								<h5>$40.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f3.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(45 review)</span>
+								</p>
+								<h3><a href="#">Llavero mariposa</a></h3>
+								<h5>$59.00</h5>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-3">
+						<div class="single-feature">
+							<img src="assets/images/features/f4.jfif" alt="feature image">
+							<div class="single-feature-txt text-center">
+								<p>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<i class="fa fa-star"></i>
+									<span class="spacial-feature-icon"><i class="fa fa-star"></i></span>
+									<span class="feature-review">(37 review)</span>
+								</p>
+								<h3><a href="#">Llavero rosas light</a></h3>
+								<h5>$139.00</h5>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.feature-->
+	<!--feature end -->
+
+	<!--blog start -->
+	<section id="blog" class="blog">
+		<div class="container">
+			<div class="section-header">
+				<h2>ULTIMAS NOVEDADES</h2>
+				<P>----</P>
+			</div><!--/.section-header-->
+			<div class="blog-content">
+				<div class="row">
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b1.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a>"El toque de distinción que tu mano merece"</a></h2>
+								<h3>"Anillos que cuentan tu historia, pieza por pieza"</h3>
+								<p>
+									Los anillos son más que solo adornos, son una declaración de estilo y actitud.
+									En nuestra nueva colección, cada anillo está diseñado para complementar tu estilo de
+									vida,
+									ya sea para un look diario o para ese momento especial que siempre recordarás.
+									¡Haz que tu mano hable por ti!
+								</p>
+							</div>
+						</div>
+
+					</div>
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b3.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a href="#">"Brilla con cada mirada"</a></h2>
+								<h3>"Cuelga la elegancia alrededor de tu cuello"</h3>
+								<p>
+									Los collares son la pieza que nunca pasa desapercibida.
+									En nuestra última colección, encontrarás desde delicados y finos hasta collares más
+									audaces y modernos, perfectos para cualquier ocasión.
+									¡Haz que todos te miren por el detalle perfecto que llevas alrededor del cuello!
+								</p>
+							</div>
+						</div>
+					</div>
+					<div class="col-sm-4">
+						<div class="single-blog">
+							<div class="single-blog-img">
+								<img src="assets/images/blog/b2.jfif" alt="blog image">
+								<div class="single-blog-img-overlay"></div>
+							</div>
+							<div class="single-blog-txt">
+								<h2><a href="#">"La elegancia que te acompaña"</a></h2>
+								<h3>"¡Atrévete a llevar el brillo en tu muñeca!"</h3>
+								<p>
+									Con diseños que van desde lo clásico y elegante hasta lo moderno y atrevido,
+									nuestras pulseras están hechas para resaltar tu personalidad. Con materiales de la
+									más alta calidad,
+									cada pieza está pensada para darle un toque especial a tu día a día. ¡Elige la que
+									se convierta en
+									tu nueva obsesión!
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div><!--/.container-->
+
+	</section><!--/.blog-->
+	<!--blog end -->
+
+	<!--footer start-->
+	<footer id="footer" class="footer">
+		<div class="container">
+			<div class="hm-footer-copyright text-center">
+				<div class="footer-social">
+					<!-- Redes sociales Instagram y TikTok -->
+					<a href="https://www.instagram.com/kass_accessories_/profilecard/?igsh=c3N2c28wbWkzcWVy"
+						target="_blank" aria-label="Instagram">
+						<i class="fa fa-instagram"></i>
+					</a>
+					<a href="https://www.tiktok.com/@kass.accesories?_t=8rMgldvQAUh&_r=1" target="_blank"
+						aria-label="TikTok">
+						<i class="fab fa-tiktok"></i> <!-- Ícono de TikTok con FontAwesome -->
+					</a>
+				</div>
+				<p>
+					&copy;copyright. Designed and developed by <a href="#">themesine</a> |
+					<a href="#" id="terms-btn">Terms & Conditions</a>
+				</p>
+			</div>
+		</div>
+
+		<!-- Scroll to Top Button -->
+		<div id="scroll-Top">
+			<div class="return-to-top">
+				<i class="fa fa-angle-up" id="scroll-top" data-toggle="tooltip" data-placement="top" title=""
+					data-original-title="Back to Top" aria-hidden="true"></i>
+			</div>
+		</div>
+	</footer>
+
+
+	<!-- Modal de Términos y Condiciones -->
+	<div id="termsModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<h2>Términos y Condiciones</h2>
+			<p>Bienvenido al sitio web de "Kass". Al acceder y utilizar nuestro sitio, aceptas cumplir con los
+				siguientes términos y condiciones.
+				Si no estás de acuerdo con alguno de estos términos, te recomendamos que no utilices este sitio.</p>
+			<br>
+
+			<p><strong>1. Condiciones de Uso del Sitio Web</strong></p>
+			<p><strong>1.1 Registro: </strong></p>
+			<p>Para realizar compras, los usuarios deben proporcionar información veraz y actualizada, como nombre
+				completo, dirección, correo electrónico y datos de pago. La privacidad de esta información está
+				protegida según nuestra Política de Privacidad.</p>
+			<p><strong>1.2 Edad Mínima: </strong></p>
+			<p>Los usuarios deben ser mayores de 18 años o contar con el consentimiento de un adulto para realizar
+				compras en el sitio.</p>
+			<p><strong>1.3 Uso Aceptable: </strong></p>
+			<p>No está permitido el uso del sitio web para fines ilegales o para transmitir material ofensivo, violento
+				o que infrinja derechos de terceros.</p>
+			<br>
+
+			<p><strong>2. Productos</strong></p>
+			<p><strong>1.1 Descripción de Productos: </strong></p>
+			<p>Intentamos describir nuestros productos con precisión. Sin embargo, las imágenes pueden diferir
+				ligeramente del producto real en cuanto a color y detalles debido a la naturaleza artesanal de nuestras
+				piezas y la configuración de pantalla de los dispositivos.</p>
+			<p><strong>1.2 Disponibilidad: </strong></p>
+			<p>Todos los productos están sujetos a disponibilidad. Nos reservamos el derecho de modificar o descontinuar
+				productos sin previo aviso.</p>
+			<p><strong>1.3 Uso Aceptable: </strong></p>
+			<br>
+
+			<p><strong>3. Proceso de Compra</strong></p>
+			<p><strong>3.1 Precios: </strong></p>
+			<p>Los precios mostrados en el sitio están expresados en [Moneda] e incluyen impuestos aplicables. Los
+				costos de envío se calcularán durante el proceso de compra y pueden variar según la ubicación de
+				entrega.</p>
+			<p><strong>3.2 Confirmación de Pedido</strong></p>
+			<p>Al realizar un pedido, recibirás un correo de confirmación. Esto no implica una aceptación definitiva de
+				la compra; nos reservamos el derecho de cancelar pedidos por razones de disponibilidad o error en el
+				precio.</p>
+			<p><strong>3.3 Pago: </strong></p>
+			<p>Aceptamos diversas formas de pago, incluyendo tarjetas de crédito y débito, PayPal y transferencias
+				bancarias. La información de pago es tratada de manera segura, y no almacenamos datos sensibles de pago
+				en nuestro sitio.</p>
+			<br>
+
+			<p><strong>4. Envíos y Entrega</strong></p>
+			<p><strong>4.1 Política de Devolución: </strong></p>
+			<p>Aceptamos devoluciones de productos en un plazo de [14 días] desde la recepción, siempre que estén en su
+				empaque original y en perfectas condiciones. Los gastos de envío de la devolución corren a cargo del
+				cliente.</p>
+			<p><strong>4.2 Excepciones: </strong></p>
+			<p>No se aceptan devoluciones de productos personalizados o hechos a medida, excepto en caso de defecto.</p>
+			<p><strong>4.3 Reembolsos: </strong></p>
+			<p>Una vez recibida la devolución y verificada, procederemos a emitir el reembolso en el método de pago
+				original.</p>
+			<br>
+
+			<p><strong>5. Cambios y Devoluciones</strong></p>
+			<p><strong>5.1 Opciones de Envío: </strong></p>
+			<p>Ofrecemos diferentes opciones de envío que serán indicadas al finalizar la compra.</p>
+			<p><strong>5.2 Tiempos de Entrega: </strong></p>
+			<p>Los tiempos de entrega varían según la ubicación y el método de envío elegido. Kass no se hace
+				responsable de retrasos causados por el servicio de mensajería.</p>
+			<p><strong>5.3 Seguimiento de Pedido: </strong></p>
+			<p>Proporcionaremos un número de seguimiento para que puedas rastrear el estado de tu pedido.</p>
+			<br>
+
+			<p><strong>6. Responsabilidad</strong></p>
+			<p>Nos reservamos el derecho de cambiar estos términos sin previo aviso.</p>
+		</div>
+	</div>
+	<!--footer end-->
+
+
+	<script>
+		// Obtén el modal
+		var modal = document.getElementById("termsModal");
+
+		// Obtén el botón de los términos y condiciones
+		var btn = document.getElementById("terms-btn");
+
+		// Obtén el botón de cierre (X)
+		var span = document.getElementsByClassName("close")[0];
+
+		// Cuando el usuario haga clic en el enlace de términos y condiciones, abre el modal
+		btn.onclick = function () {
+			modal.style.display = "block";
+		}
+
+		// Cuando el usuario haga clic en la "X", cierra el modal
+		span.onclick = function () {
+			modal.style.display = "none";
+		}
+
+		// Cuando el usuario haga clic en cualquier parte fuera del modal, ciérralo
+		window.onclick = function (event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
+		}
+	</script>
+
+	<!-- Include all js compiled plugins (below), or include individual files as needed -->
+
+	<script src="assets/js/jquery.js"></script>
+	<!--modernizr.min.js-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script
+	<!--bootstrap.min.js-->
+	<script src="assets/js/bootstrap.min.js"></script>
+	<!-- bootsnav js -->
+	<script src="assets/js/bootsnav.js"></script>
+	<!--owl.carousel.js-->
+	<script src="assets/js/owl.carousel.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+	<!--Custom JS-->
+	<script src="assets/js/custom.js"></script>
+
+</body>
+
+</html>
